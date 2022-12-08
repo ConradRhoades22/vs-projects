@@ -1,0 +1,10 @@
+header {
+    display: flex;
+    font-family: sans-serif;
+    background-color: lightsteelblue;
+    text-align: center;
+    justify-content: center;
+    height: 150px;
+    flex-direction: column;
+    border-radius: 10px;
+}
