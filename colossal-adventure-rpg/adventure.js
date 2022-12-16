@@ -3,7 +3,8 @@ const readline = require("readline-sync")
 const player = {
     healthMax: 40,
     currentHealth: 40,
-    attackMax: 10
+    attackMax: 10,
+    attackMin: 0,
 }
 
 const enemies = [
@@ -32,84 +33,104 @@ const enemies = [
         attackMin :0
     }
 ]
+
+const combatActions = ["Smack", "Run",]
+
 let selectedEnemy = () => {
     min = 1
     max = enemies.length
-
-    let selectedEnemy = Math.floor(Math.random() * max)
-    return enemies[selectedEnemy]
+    let selected = Math.floor(Math.random() * max)
+    return enemies[selected]
 }
-let random_number;
+function random_number(min, max) {
+    return Math.floor(Math.random() * 4)
+}
+
 let playerInv = []
 let alive = true
 let name = readline.question("Welcome. A Grand adventure will take place, but first I will need to know your name?")
 console.log("Well " + name +  ", today you will embark on a journey that is like many others. Really, its not too special.")
+
+
 const whatYouDo = () => {
-readline.keyIn("Press 'w' to start off on the right foot or see what you are carring with you",{limit: 'w'})
-readline.keyIn("You open your My Little Pony fanny pack to see " + playerInv + "You also feel this much alive: " + player.currentHealth, {limit: 'p'})
-
-    random_number = Math.floor(Math.random() * 4);
-
-    switch (random_number) {
+    let walking = readline.keyIn("Press 'w' to start off on the right foot or see what you are carring with you",{limit: 'wp'})
+    if (walking === "p") {
+        console.log("player health: " + player.currentHealth) 
+        console.log("Inventory: " + playerInv)
+    }
+    //readline.keyIn("You open your My Little Pony fanny pack to see: " + playerInv + "You also feel this much alive: " + player.currentHealth, {limit: 'p'})w
+        let randomIndex = random_number()
+        switch (randomIndex) {
         case 0:
-            console.log("As you were walking and observing the vast and dull emptiness, you stub your toe. Nice")
-            break;
+        console.log("As you were walking and observing the vast and dull emptiness, you stub your toe. Nice")
+        break;
         case 1:
-            console.log("You find a water fountain, as you take a drink the water fluctuates from boiling hot to ice cold because you cities infrastructure is only held together with ducktape and used gum")
-            break;
+        console.log("You find a water fountain, as you take a drink the water fluctuates from boiling hot to ice cold because your cities infrastructure is only held together with ducktape and used gum")
+        break;
         case 2:
-            console.log("The trees are oddly blue. They hold no 3D values, just blue.")
-            break;
+        console.log("The trees are oddly blue. They hold no 3D values, just blue.")
+        break;
         case 3:
-            console.log("The locals seems small but rapidly getting bigger. As you turn around there is a " + (inCombat = true) + " standing over you. Good luck")
-            break;
+        combat()
+        break;
         default:
             break;
+        }
     }
-}
-
-while (alive){
-    console.log ("Your blood is still pumping through your veins, you have never felt so dis-satisfyed with your surroundings")
-    whatYouDo()
-    combat()
-}
-const combatActions = ["Smack", "Run",]
-
-let combat = (selectedEnemy) => {
-    selectedEnemy.currentHealth =playerHit(selectedEnemy, player)
-    while (inCombat){
+    let combat = () => {
+    let newEnemy = selectedEnemy()
+    newEnemy.currentHealth = newEnemy.healthMax
+    console.log("The locals seems small but rapidly getting bigger. As you turn around there is a " + newEnemy.name + " standing over you. Good luck")
+    inCombat = true
+    while (player.currentHealth > 0 && inCombat){
         const combatChoice = readline.keyInSelect(combatActions, "what do you want to do?")
-        if (combatChoice[combatChoice] === "Smack") {
-            console.log("Schwack. you hit him for "+ hitAmount +"hit points. Your really giving it to them now.")
-            inCombat = smack(selectedEnemy)
+        if (combatActions[combatChoice] === "Smack") {
+            let attack = playerHit(newEnemy)
+        console.log("Schwack. you hit him for "+ attack +" hit points. Your really giving it to them now.")
+        if (newEnemy.currentHealth <= 0) {
+            playerInv.push(newEnemy.drops)
+            player.currentHealth = player.currentHealth + 2
+            inCombat = false
+        }
+            let enemyAttack = enemyHit(newEnemy)
+            console.log(newEnemy.name + " swing and hit you for " + enemyAttack)
+            if (player.currentHealth <= 0) {
+                console.log("you died")
+                alive = false
+                inCombat = false
+            }
         } else if (combatActions[combatChoice] === "Run"){
-            console.log("These guys are crazy, time to run untill you break a light sweat.")
-            inCombat = run(selectedEnemy)
+        console.log("These guys are crazy, time to run untill you break a light sweat.")
+        let escape = Math.floor(Math.random() * 2)
+        console.log(escape)
+            if (escape === 1) {
+                inCombat = false
+            } else{
+                let enemyAttack = enemyHit(newEnemy)
+                console.log("They swing and hit you for " + enemyAttack)
+            }
         } else {
-
+            inCombat = false
+            alive = false
         }
     }
 }
-let smack = (selectedEnemy) => {
-    if (selectedEnemy.currentHealth > 0) {
-        console.log("You won, there will be rumors that start to spread across this land about someone who isnt a huge pushover.")
-        playerInv.push(selectedEnemy.drops)
-        return false
-    } else if (player.currentHealth <= 0) {
-        console.log("Wow i didnt think this would happen.")
-        inCombat = false
-        alive = false
-    }
-}
-let playerHit = (selectedEnemy, player) => {
+
+let playerHit = (selectedEnemy) => {
     max = player.attackMax
-    let hitAmount =  math.floor((math.random() * max) + min)
-    console.log("you hit them for "+hitAmount+". nice")
+    let hitAmount =  Math.floor((Math.random() * max) + min)
     selectedEnemy.currentHealth = selectedEnemy.currentHealth - hitAmount
+    return hitAmount
 }
-let enemyHit = (selectedEnemy, player) => {
+let enemyHit = (selectedEnemy) => {
     min = selectedEnemy.attackMin
     max = selectedEnemy.attackMax
     let enemyPower = Math.floor((Math.random() * max) + min)
     player.currentHealth = player.currentHealth - enemyPower
+    return enemyPower
+}
+while (alive){
+    console.log ("Your blood is still pumping through your veins, you have never felt so dis-satisfyed with your surroundings")
+    whatYouDo()
+    random_number()
 }
